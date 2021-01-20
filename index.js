@@ -42,7 +42,7 @@ function PromptOne() {
 
         })
         .then(function (answer) {
-            switch (answer.starter) {
+            switch (answer.action) {
                 case "View All Employees":
                     viewEmployee();
                     break;
@@ -58,27 +58,35 @@ function PromptOne() {
                 case "Remove Employees":
                     removeEmployees();
                     break;
+                case "End":
+                    connection.end();
+                    break;
             }
         })
 }
 
 function viewEmployee() {
-    connection.query = ("SELECT *FROM employee", function (err, data) {
-        console.table(data);
-        promptOne();
-    })
+    const query = "SELECT * FROM employee";
+    connection.query(query, function(err, res) {
+      if (err) throw err;
+      console.table(res);
+      init();
+    });
+  }
 
-}
+
 function viewEmployeeByManager() {
     connection.query("SELECT * FROM manager", function (err, data) {
         console.table(data)
         promptOne();
+        if (err) throw err;
     })
 }
 function viewEmployeeByDepartment() {
     connection.query("SELECT * FROM department", function (err, data) {
         console.table(data);
         promptOne();
+        if (err) throw err;
     })
 }
 
@@ -122,11 +130,36 @@ function removeEmployees() {
         name: "employeeName",
         type: "list",
         choices: employeeList
-    }).then(function (result) {
-        connection.query(sqlqueries.removeEmployee(employeeIdToRemove), function (err, results) {
+    }).then(function (res) {
+        connection.query(sqlqueries.removeEmployee(employeeIdToRemove), function (err, res) {
             if (err) throw err;
             console.log("Employee removed")
             init();
         });
     });
+}
+function addDepartment() {
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                name: "deptartmentName",
+                message: "What Department would you like to add?"
+            }
+        ])
+        .then(function (res) {
+            console.log(res);
+            const query = connection.query(
+                "INSERT INTO departments SET ?",
+                {
+                    name: res.deptartmentName
+                },
+                function (err, res) {
+                    connection.query("SELECT * FROM departments", function (err, res) {
+                        console.table(res);
+                        start();
+                    })
+                }
+            )
+        })
 }
