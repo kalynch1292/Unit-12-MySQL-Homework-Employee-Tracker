@@ -6,4 +6,4 @@ https://github.com/kalynch1292/Unit-12-MySQL-Homework-Employee-Tracker.git
 
 
 ## Image of Deployed Application
-![screenshot1](./assets/screenshot1.PNG)
+![screenshot1] (./assets/screenshot1.PNG)
