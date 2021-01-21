@@ -1,35 +1,31 @@
 DROP DATABASE IF EXISTS homework;
+
 CREATE DATABASE homework;
 
 USE homework;
 
-
-
 CREATE TABLE department (
-   department_id int NOT NULL,
+   department_id int AUTO_INCREMENT,
    NAME VARCHAR (30) NOT NULL,
-   PRIMARY KEY (department_id),
-)
+   PRIMARY KEY (department_id)
+);
 
 CREATE TABLE role (
- role_id int NOT NULL,
+ role_id int NOT NULL AUTO_INCREMENT,
  title VARCHAR (30),
  salary DECIMAL(10,4) NULL,
- PRIMARY KEY (role_id),
- FOREIGN KEY (department_id) REFERENCES department (department_id)
-
-
-)
+ department_id int NOT NULL,
+ PRIMARY KEY (role_id)
+);
 
 CREATE TABLE employee (
-    employee_id int NOT NULL,
+    employee_id  int NOT NULL AUTO_INCREMENT,
     first_name VARCHAR (30),
     last_name VARCHAR (30),
-    PRIMARY KEY (employee_id),
-    FOREIGN KEY (role_id) REFERENCES role (role_id)
-    manager_id int,
-
-)
+    role_id int NOT NULL,
+     manager_id int,
+    PRIMARY KEY (employee_id)
+);
 
 
 

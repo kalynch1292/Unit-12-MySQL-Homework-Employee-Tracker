@@ -22,10 +22,10 @@ connection.connect(function (err) {
     if (err) throw err;
     console.log("connected as id " + connection.threadId);
     //   connection.end();
-    PromptOne();
+    promptOne();
 });
 
-function PromptOne() {
+function promptOne() {
     inquirer
         .prompt({
             type: "list",
@@ -33,8 +33,8 @@ function PromptOne() {
             message: "what would you like to do?",
             choices: [
                 "View All Employees",
-                "View All Employees By Department",
-                "View All Employees By Manager",
+                "View All Departments",
+                "View Roles",
                 "Add Employees",
                 "Remove Employees"
 
@@ -42,15 +42,15 @@ function PromptOne() {
 
         })
         .then(function (answer) {
-            switch (answer.action) {
+            switch (answer.starter) {
                 case "View All Employees":
                     viewEmployee();
                     break;
-                case "View All Employees by Department":
-                    viewEmployeeByDepartment();
+                case "View All Departments":
+                    viewDepartment();
                     break;
-                case "View Employees by Manager":
-                    viewEmployeeByManager();
+                case "View Roles":
+                    viewRoles();
                     break;
                 case "Add Employees":
                     addEmployee();
@@ -66,62 +66,71 @@ function PromptOne() {
 }
 
 function viewEmployee() {
-    const query = "SELECT * FROM employee";
-    connection.query(query, function(err, res) {
-      if (err) throw err;
-      console.table(res);
-      init();
+    const selection = "SELECT * FROM employee";
+    connection.query(selection, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        promptOne();
     });
-  }
+}
 
 
-function viewEmployeeByManager() {
-    connection.query("SELECT * FROM manager", function (err, data) {
+function viewRoles() {
+    connection.query("SELECT * FROM role", function (err, data) {
         console.table(data)
         promptOne();
         if (err) throw err;
     })
 }
-function viewEmployeeByDepartment() {
+function viewDepartment() {
     connection.query("SELECT * FROM department", function (err, data) {
-        console.table(data);
+        console.table(data, "here");
         promptOne();
         if (err) throw err;
     })
 }
 
-function addEmployee() {
-    inquirer
-        .prompt([{
-            type: "input",
-            name: "firstName",
-            message: "What is the employees first name?"
-        },
-        {
-            type: "input",
-            name: "lastName",
-            message: "What is the employees last name?"
-        },
-        {
-            type: "number",
-            name: "roleId",
-            message: "What is the employees role-ID"
-        },
-        {
-            type: "number",
-            name: "managerId",
-            message: "What is the employees manager's ID?"
-        }
-        ])
-
-        .then(function () {
-            connection.query("INSERT INTO employee"(first_name, last_name, employee_id, role_id), function (err, data) {
-                console.table(data);
-                promptOne();
-
-
-            })
-        })
+const addEmployee = async () => {
+    connection.query('SELECT * FROM role', (err, data)=>{
+        const roleList = data.map(department=>{return{name:department.title, value:department.role_id}})
+        connection.query('SELECT * FROM employee', (err, data)=> {
+            const employeeList = data.map(employee=> {return {name : `${employee.first_name} ${employee.last_name}`, value: employee.employee_id}})
+            inquirer
+                .prompt([{
+                    type: "input",
+                    name: "first_name",
+                    message: "What is the employees first name?"
+                },
+                {
+                    type: "input",
+                    name: "last_name",
+                    message: "What is the employees last name?"
+                },
+                {
+                    type: "list",
+                    name: "role_id",
+                    message: "What is the employees role",
+                    choices: roleList
+                    
+                },
+                {
+                    type: "list",
+                    name: "manager_id",
+                    message: "What is the employees manager's ID?",
+                    choices: employeeList
+                }
+                ])
+        
+                .then(function (answers) {
+                    connection.query("INSERT INTO employee SET ?", answers, function (err, data) {
+                        console.log('Added employee');
+                        promptOne();
+        
+        
+                    })
+                })
+        } ) 
+    })
 }
 
 function removeEmployees() {
